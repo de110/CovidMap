@@ -13,7 +13,7 @@
           :chartData="arrPositive"
           :options="chartOptions"
           :chartColors="positiveChartColors"
-          label="Positive"
+          label="확진자 수"
         />
       </div>
     </div>
@@ -21,9 +21,10 @@
 </template>
 
 <script>
-import axios from "axios";
+// import axios from "axios";
 import LineChart from "../components/LineChart.vue";
 import dayjs from "dayjs";
+import { nationGraphApi } from '../api';
 
 export default {
   components: {
@@ -31,6 +32,7 @@ export default {
   },
   data() {
     return {
+      data:[],
       arrPositive: [],
       positiveChartColors: {
         // borderDash: [],
@@ -69,41 +71,16 @@ export default {
     };
   },
   async created() {
-    // const url =
-    //   "/openapi/service/rest/Covid19/getCovid19SidoInfStateJson?serviceKey=rp3lvczaoVPpOPI%2FsYJJJzknBUNL0LPaAo5HCXybKpsIm1YJjvR%2BtxFV0qoMH38Xq1jLsRN%2B%2BvvOp4XWFw4jkw%3D%3D&pageNo=1&numOfRow=10&startCreateDt=20210829&endCreateDt=20210829";
-    const url = "/one/openapi/service/rest/Covid19/getCovid19InfStateJson";
-    const serviceKey =
-      "rp3lvczaoVPpOPI%2FsYJJJzknBUNL0LPaAo5HCXybKpsIm1YJjvR%2BtxFV0qoMH38Xq1jLsRN%2B%2BvvOp4XWFw4jkw%3D%3D";
-
-    let pageNo = "1";
-    let numOfRow = "10";
 
     this.startCreateDt = dayjs(this.range.start).format("YYYYMMDD");
     this.endCreateDt = dayjs(this.range.end).format("YYYYMMDD");
-
-    try {
-      let response = await axios.get(
-        url +
-          "?serviceKey=" +
-          serviceKey +
-          "&pageNo" +
-          pageNo +
-          "&numOfRows=" +
-          numOfRow +
-          "&startCreateDt=" +
-          this.startCreateDt +
-          "&endCreateDt=" +
-          this.endCreateDt
-      );
-      this.data = response.data.response.body.items.item;
-    } catch (error) {
-      console.log(error);
-    }
 
     // 날짜 순서대로 재정렬
     this.data.sort((a, b) => {
       return a.createDt > b.createDt ? -1 : a.createDt < b.createDt ? 1 : 0;
     });
+
+    this.data = await nationGraphApi(this.startCreateDt,this.endCreateDt);
 
     for (var i = 0; i < this.data.length - 1; i++) {
       const date = this.data[i].stateDt;

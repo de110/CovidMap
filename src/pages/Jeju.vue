@@ -1,7 +1,6 @@
 <template>
-  <div id="gyeonggi" class="gyeonggi">
+  <div id="jeju" class="jeju">
     <covid-title />
-    <!-- <svg> -->
     <div id="gmap-wrapper" class="gmap-wrapper">
       <svg>
         <g id="map-g" class="map-g"></g>
@@ -13,7 +12,6 @@
             v-bind:key="`item-${i}`"
             font-size="15"
           >
-            <!-- {{ sido }} -->
             제주도
           </text>
         </g>
@@ -34,11 +32,12 @@
 
 <script>
 import * as d3 from "d3";
-const MAP_GEOJSON = require("../assets/local/Jeju.json");
 import dayjs from "dayjs";
-import axios from "axios";
-import GyeonggiGraph from "../pages/GyeonggiGraph.vue";
+import GyeonggiGraph from "./LocalGraph.vue";
 import CovidTitle from "../components/CovidTitle.vue";
+import { MetropoliApi } from '../api';
+
+const MAP_GEOJSON = require("../assets/local/Jeju.json");
 
 export default {
   components: { GyeonggiGraph, CovidTitle },
@@ -50,7 +49,6 @@ export default {
       sido: "",
       total: "",
       range: {
-        // start: new Date().getTime() - 1 * 24 * 60 * 60 * 1000,
         start: new Date(),
         end: new Date(),
       },
@@ -66,37 +64,8 @@ export default {
 
   methods: {
     async api() {
-      const url = "/two/api/15077756/v1/vaccine-stat";
-      const serviceKey =
-        "rp3lvczaoVPpOPI%2FsYJJJzknBUNL0LPaAo5HCXybKpsIm1YJjvR%2BtxFV0qoMH38Xq1jLsRN%2B%2BvvOp4XWFw4jkw%3D%3D";
-      let page = "1";
-      let perPage = "10";
       let startCreateDt = dayjs(this.range.start).format("YYYY-MM-DD");
-      // let endCreateDt = startCreateDt;
-
-      // console.log(startCreateDt);
-      // 날짜 순서대로 재정렬
-      // this.data.sort((a, b) => {
-      //   return a.createDt > b.createDt ? -1 : a.createDt < b.createDt ? 1 : 0;
-      // });
-      try {
-        let response = await axios.get(
-          url +
-            "?page=" +
-            page +
-            "&perPage=" +
-            perPage +
-            "&returnType=JSON" +
-            "&cond%5BbaseDate%3A%3AEQ%5D=" +
-            startCreateDt +
-            "%2000%3A00%3A00" +
-            "&serviceKey=" +
-            serviceKey
-        );
-        this.data = response.data.data;
-      } catch (error) {
-        console.log(error);
-      }
+      this.data=await MetropoliApi(startCreateDt);
     },
 
     drawMap() {
@@ -187,14 +156,12 @@ export default {
           return path.centroid(d)[1] + 15;
         })
         .attr("fill", "black");
-      // .on("click", clicked);
     },
   },
 };
 </script>
 
 <style lang="scss">
-// @import "~bootstrap/scss/bootstrap";
 .gyeonggi {
   padding: 0px 0px 30px 0px;
 }
@@ -205,19 +172,8 @@ export default {
     border-radius: 10px;
   }
   .rect {
-    // filter: drop-shadow(0px 0px 2px lightgray);
     filter: drop-shadow(0px 0px 2px #72adff);
   }
 
-  // .map-g {
-  //   stroke: white;
-  //   stroke-width: 1px;
-  // }
 }
-// .g-svg {
-//   position: relative;
-//   text-align: center;
-//   border: 1.5px solid lightgray;
-//   border-radius: 10px;
-// }
 </style>

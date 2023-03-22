@@ -1,7 +1,6 @@
 <template>
-  <div id="localmap" class="localmap">
+  <div id="sejong" class="sejong">
     <covid-title />
-    <!-- <svg> -->
     <div id="lmap-wrapper" class="lmap-wrapper">
       <svg>
         <text class="info" x="10" y="30">{{ sido }} 백신 접종</text>
@@ -27,12 +26,13 @@
 
 <script>
 import * as d3 from "d3";
+import dayjs from "dayjs";
+import GyeonggiGraph from "./LocalGraph.vue";
+import CovidTitle from "../components/CovidTitle.vue";
+import { MetropoliApi } from '../api';
+
 const MAP_GEOJSON = require("../assets/local/Sejong.json");
 const population = 366560;
-import dayjs from "dayjs";
-import axios from "axios";
-import GyeonggiGraph from "../pages/GyeonggiGraph.vue";
-import CovidTitle from "../components/CovidTitle.vue";
 
 export default {
   components: { GyeonggiGraph, CovidTitle },
@@ -46,7 +46,6 @@ export default {
       secondTotal: "",
 
       range: {
-        // start: new Date().getTime() - 1 * 24 * 60 * 60 * 1000,
         start: new Date(),
         end: new Date(),
       },
@@ -62,31 +61,8 @@ export default {
 
   methods: {
     async api() {
-      const url = "/two/api/15077756/v1/vaccine-stat";
-      const serviceKey =
-        "rp3lvczaoVPpOPI%2FsYJJJzknBUNL0LPaAo5HCXybKpsIm1YJjvR%2BtxFV0qoMH38Xq1jLsRN%2B%2BvvOp4XWFw4jkw%3D%3D";
-      let page = "1";
-      let perPage = "10";
       let startCreateDt = dayjs(this.range.start).format("YYYY-MM-DD");
-
-      try {
-        let response = await axios.get(
-          url +
-            "?page=" +
-            page +
-            "&perPage=" +
-            perPage +
-            "&returnType=JSON" +
-            "&cond%5BbaseDate%3A%3AEQ%5D=" +
-            startCreateDt +
-            "%2000%3A00%3A00" +
-            "&serviceKey=" +
-            serviceKey
-        );
-        this.data = response.data.data;
-      } catch (error) {
-        console.log(error);
-      }
+      this.data=await MetropoliApi(startCreateDt);
 
       for (var i = 0; i < this.data.length; i++) {
         this.data[i] ? this.data[i].sido : "";
@@ -130,6 +106,7 @@ export default {
         .select(".rect-2")
         .attr("width", 200)
         .attr("height", 200);
+
       // 지도의 출력 방법을 선택(메로카토르)
       let projection = d3
         .geoMercator()
@@ -195,7 +172,6 @@ export default {
 </script>
 
 <style lang="scss">
-// @import "~bootstrap/scss/bootstrap";
 .localmap {
   padding: 0px 0px 30px 0px;
 }

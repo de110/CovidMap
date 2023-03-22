@@ -1,4 +1,4 @@
-# all-set-test03
+# CovidMap
 
 ## Project setup
 ```
@@ -21,4 +21,3 @@ npm run lint
 ```
 
 ### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).

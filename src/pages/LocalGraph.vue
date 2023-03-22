@@ -15,9 +15,9 @@
 </template>
 
 <script>
-import axios from "axios";
 import LineChart from "../components/LineChart.vue";
 import dayjs from "dayjs";
+import { nationwideApi } from '../api';
 
 export default {
   components: {
@@ -27,9 +27,7 @@ export default {
     return {
       arrPositive: [],
       positiveChartColors: {
-        // borderDash: [],
         backgroundColor: "#EF5350",
-        //"#ED544A" #CF4C4C,"#F44336"
       },
       chartOptions: {
         scales: {
@@ -51,7 +49,6 @@ export default {
             },
           ],
         },
-        // responsive: true,
         maintainAspectRatio: false,
       },
       range: {
@@ -63,38 +60,12 @@ export default {
     };
   },
   async created() {
-    // const url =
-    //   "/one/openapi/service/rest/Covid19/getCovid19SidoInfStateJson?serviceKey=rp3lvczaoVPpOPI%2FsYJJJzknBUNL0LPaAo5HCXybKpsIm1YJjvR%2BtxFV0qoMH38Xq1jLsRN%2B%2BvvOp4XWFw4jkw%3D%3D&pageNo=1&numOfRow=10&startCreateDt=20210829&endCreateDt=20210829";
-    const url = "/one/openapi/service/rest/Covid19/getCovid19SidoInfStateJson";
-    // const url = "/one/openapi/service/rest/Covid19/getCovid19InfStateJson";
-    const serviceKey =
-      "rp3lvczaoVPpOPI%2FsYJJJzknBUNL0LPaAo5HCXybKpsIm1YJjvR%2BtxFV0qoMH38Xq1jLsRN%2B%2BvvOp4XWFw4jkw%3D%3D";
-
-    let pageNo = "1";
-    let numOfRow = "10";
 
     this.startCreateDt = dayjs(this.range.start).format("YYYYMMDD");
     this.endCreateDt = dayjs(this.range.end).format("YYYYMMDD");
 
-    try {
-      let response = await axios.get(
-        url +
-          "?serviceKey=" +
-          serviceKey +
-          "&pageNo" +
-          pageNo +
-          "&numOfRows=" +
-          numOfRow +
-          "&startCreateDt=" +
-          this.startCreateDt +
-          "&endCreateDt=" +
-          this.endCreateDt
-      );
-      this.data = response.data.response.body.items.item;
-    } catch (error) {
-      console.log(error);
-    }
-
+    this.data = await nationwideApi(this.startCreateDt,this.endCreateDt);
+  
     // 날짜 순서대로 재정렬
     this.data.sort((a, b) => {
       return a.createDt > b.createDt ? -1 : a.createDt < b.createDt ? 1 : 0;

@@ -1,17 +1,10 @@
 <template>
   <div id="mt-3" class="mt-3">
-    <!-- <svg> -->
     <div id="map-wrapper" class="map-wrapper">
       <svg>
         <g id="map-g" class="map-g"></g>
         <g class="rect"></g>
         <g id="text-g" class="text-g">
-          <!-- <text
-            class="text-wrapper"
-            v-for="(item, i) in arr"
-            v-bind:key="`item-${i}`"
-            font-size="10"
-          > -->
           <text class="text-wrapper" font-size="10">
             {{ sido }}
             {{ total }}
@@ -34,10 +27,9 @@
 <script>
 import * as d3 from "d3";
 const MAP_GEOJSON = require("../assets/map.json");
-import dayjs from "dayjs";
-import axios from "axios";
-// import CovidGraph from "../components/CovidGraph.vue";
-// import CovidTitle from "../components/CovidTitle.vue";
+// import dayjs from "dayjs";
+// import axios from "axios";
+import {localApi} from '../api/index';
 
 export default {
   components: {},
@@ -49,7 +41,6 @@ export default {
       sido: "",
       total: "",
       range: {
-        // start: new Date().getTime() - 1 * 24 * 60 * 60 * 1000,
         start: new Date(),
         end: new Date(),
       },
@@ -65,41 +56,10 @@ export default {
 
   methods: {
     async api() {
-      const url = "/two/api/15077756/v1/vaccine-stat";
-      const serviceKey =
-        "rp3lvczaoVPpOPI%2FsYJJJzknBUNL0LPaAo5HCXybKpsIm1YJjvR%2BtxFV0qoMH38Xq1jLsRN%2B%2BvvOp4XWFw4jkw%3D%3D";
-      let page = "1";
-      let perPage = "10";
-      let startCreateDt = dayjs(this.range.start).format("YYYY-MM-DD");
-      // let endCreateDt = startCreateDt;
-
-      // console.log(startCreateDt);
-      // 날짜 순서대로 재정렬
-      // this.data.sort((a, b) => {
-      //   return a.createDt > b.createDt ? -1 : a.createDt < b.createDt ? 1 : 0;
-      // });
-      try {
-        let response = await axios.get(
-          url +
-            "?page=" +
-            page +
-            "&perPage=" +
-            perPage +
-            "&returnType=JSON" +
-            "&cond%5BbaseDate%3A%3AEQ%5D=" +
-            startCreateDt +
-            "%2000%3A00%3A00" +
-            "&serviceKey=" +
-            serviceKey
-        );
-        this.data = response.data.data;
-      } catch (error) {
-        console.log(error);
-      }
-
+      this.data=await localApi();
+      
       for (var i = 0; i < this.data.length; i++) {
         this.data[i] ? this.data[i].sido : "";
-        // console.log(this.sido);
         if (this.data[i].sido == "경기도") {
           this.sido = this.data[i].sido;
           this.total = this.data[i].firstCnt;
@@ -126,7 +86,6 @@ export default {
 
       const mapLayer = svg.select("g").classed("map-test", true);
       const textLayer = svg.selectAll("text");
-      // const textLayer2 = svg.select("#text-gg").selectAll("text");
       const boxLayer = svg
         .select(".rect")
         .attr("width", 200)
@@ -150,37 +109,6 @@ export default {
         height / 2 - (scale * (bounds[1][1] + bounds[0][1])) / 2 + 0;
       const offset = [xoffset, yoffset];
       projection.scale(scale).translate(offset);
-
-      //   const color = d3
-      //     .scaleLinear()
-      //     .domain([1, 20])
-      //     .clamp(true)
-      //     .range(["#595959", "#595959"]);
-
-      //   const _this = this;
-
-      //   function findCodeByName(d) {
-      //     return d.path[0].__data__.properties.CTP_ENG_NM;
-      //   }
-
-      // Get province color
-      //   function fillFn(d) {
-      //     return color(nameLength(d.pointerId));
-      //   }
-
-      //   function clicked(d) {
-      //     var region = "/" + findCodeByName(d);
-      //     _this.$router.push({ path: region });
-      //   }
-      // Get province name length
-      //   function nameLength(d) {
-      //     const n = nameFn(d);
-      //     return n ? n.length : 0;
-      //   }
-      //   // Get province name
-      //   function nameFn(d) {
-      //     return d && d.properties ? d.properties.CTP_KOR_NM : null;
-      //   }
 
       // 지도 그리기
       mapLayer
@@ -225,12 +153,10 @@ export default {
 </script>
 
 <style lang="scss">
-// @import "~bootstrap/scss/bootstrap";
 .mt-3 {
   padding: 30px;
 }
 .map-wrapper {
-  //   padding: 50px;
   svg {
     border: 1.5px solid lightgray;
     border-radius: 10px;
@@ -241,10 +167,4 @@ export default {
     stroke-width: 1px;
   }
 }
-// .g-svg {
-//   position: relative;
-//   text-align: center;
-//   border: 1.5px solid lightgray;
-//   border-radius: 10px;
-// }
 </style>

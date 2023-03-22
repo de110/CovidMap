@@ -1,4 +1,6 @@
 module.exports = {
+    // publicPath: '/de110.github.io',
+    outputDir: 'gh-page',
     devServer: {
         disableHostCheck: true,
         historyApiFallback: true,

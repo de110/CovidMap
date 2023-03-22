@@ -5,7 +5,9 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "deploy": "gh-pages -d build",
+    "predeploy": "npm run build"
   },
   "dependencies": {
     "axios": "^0.23.0",
@@ -14,6 +16,8 @@
     "core-js": "^3.6.5",
     "d3": "^7.1.1",
     "dayjs": "^1.10.7",
+    "dotenv": "^16.0.3",
+    "gh-pages": "^3.2.3",
     "node-sass": "^4.14.1",
     "sass-loader": "^7.3.1",
     "vue": "^2.6.11",
@@ -47,5 +51,6 @@
     "> 1%",
     "last 2 versions",
     "not dead"
-  ]
+  ],
+  "homepage": "https://de110.github.io/all-set-test03/"
 }

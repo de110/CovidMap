@@ -1,7 +1,6 @@
 <template>
-  <div id="localmap" class="localmap">
+  <div id="seoul" class="seoul">
     <covid-title />
-    <!-- <svg> -->
     <div id="lmap-wrapper" class="lmap-wrapper">
       <svg>
         <text class="info" x="10" y="30">{{ sido }} 백신 접종</text>
@@ -11,31 +10,13 @@
         <g id="text-g" class="text-g">
           <text class="text-wrapper" font-size="10">
             1차 접종
-            <tspan x="155" y="202" font-size="15">{{ firstTotal }}%</tspan>
+            <tspan x="155" y="260" font-size="15">{{ firstTotal }}%</tspan>
           </text>
-          <!-- <text
-            class="text-wrapper"
-            v-for="(item, i) in arr"
-            v-bind:key="`item-${i}`"
-            font-size="10"
-          >
-            {{ sido }}
-          </text> -->
           <text class="secondtext" font-size="10">
             2차 접종
             <tspan x="223" y="213" font-size="15">{{ secondTotal }}</tspan>
           </text>
         </g>
-        <!-- <g id="text-gg" class="text-gg">
-          <text
-            class="percent"
-            v-for="(item, i) in arr"
-            v-bind:key="`item-${i}`"
-            font-size="13"
-          >
-            {{ total }} %
-          </text>
-        </g> -->
       </svg>
     </div>
     <gyeonggi-graph />
@@ -44,12 +25,13 @@
 
 <script>
 import * as d3 from "d3";
+import dayjs from "dayjs";
+import GyeonggiGraph from "./LocalGraph.vue";
+import CovidTitle from "../components/CovidTitle.vue";
+import { MetropoliApi } from '../api';
+
 const MAP_GEOJSON = require("../assets/local/Seoul.json");
 const population = 9668465;
-import dayjs from "dayjs";
-import axios from "axios";
-import GyeonggiGraph from "../pages/GyeonggiGraph.vue";
-import CovidTitle from "../components/CovidTitle.vue";
 
 export default {
   components: { GyeonggiGraph, CovidTitle },
@@ -63,7 +45,6 @@ export default {
       secondTotal: "",
 
       range: {
-        // start: new Date().getTime() - 1 * 24 * 60 * 60 * 1000,
         start: new Date(),
         end: new Date(),
       },
@@ -79,37 +60,8 @@ export default {
 
   methods: {
     async api() {
-      const url = "/two/api/15077756/v1/vaccine-stat";
-      const serviceKey =
-        "rp3lvczaoVPpOPI%2FsYJJJzknBUNL0LPaAo5HCXybKpsIm1YJjvR%2BtxFV0qoMH38Xq1jLsRN%2B%2BvvOp4XWFw4jkw%3D%3D";
-      let page = "1";
-      let perPage = "10";
       let startCreateDt = dayjs(this.range.start).format("YYYY-MM-DD");
-      // let endCreateDt = startCreateDt;
-
-      // console.log(startCreateDt);
-      // 날짜 순서대로 재정렬
-      // this.data.sort((a, b) => {
-      //   return a.createDt > b.createDt ? -1 : a.createDt < b.createDt ? 1 : 0;
-      // });
-      try {
-        let response = await axios.get(
-          url +
-            "?page=" +
-            page +
-            "&perPage=" +
-            perPage +
-            "&returnType=JSON" +
-            "&cond%5BbaseDate%3A%3AEQ%5D=" +
-            startCreateDt +
-            "%2000%3A00%3A00" +
-            "&serviceKey=" +
-            serviceKey
-        );
-        this.data = response.data.data;
-      } catch (error) {
-        console.log(error);
-      }
+      this.data=await MetropoliApi(startCreateDt);
 
       for (var i = 0; i < this.data.length; i++) {
         this.data[i] ? this.data[i].sido : "";
@@ -144,7 +96,6 @@ export default {
 
       const mapLayer = svg.select("#map-g");
       const textLayer = svg.select(".text-wrapper");
-      // const textLayer2 = svg.select("#text-gg").selectAll("text");
       const textLayer2 = svg.select(".secondtext");
 
       const boxLayer = svg
@@ -231,14 +182,12 @@ export default {
         .attr("x", 225)
         .attr("y", 197)
         .attr("fill", "black");
-      // .on("click", clicked);
     },
   },
 };
 </script>
 
 <style lang="scss">
-// @import "~bootstrap/scss/bootstrap";
 .localmap {
   padding: 0px 0px 30px 0px;
 }

@@ -1,6 +1,5 @@
 <template>
   <div id="mt-3" class="mt-3">
-    <!-- <svg> -->
     <div id="nmap-wrapper" class="nmap-wrapper">
       <svg>
         <g id="map-g" class="map-g"></g>
@@ -31,9 +30,10 @@
 
 <script>
 import * as d3 from "d3";
-const MAP_GEOJSON = require("../assets/map.json");
 import dayjs from "dayjs";
-import axios from "axios";
+import { nationwideApi } from '../api/index';
+
+const MAP_GEOJSON = require("../assets/map.json");
 
 export default {
   components: {},
@@ -45,52 +45,28 @@ export default {
     return {
       data: [],
       arr: [
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-      ],
-      test: ["1", "2", "3", "4", "5"],
+        "0","0","0","0","0","0",
+        "0","0","0","0","0","0",
+        "0","0","0","0","0",
+      ],     
       range: {
         start: new Date().getTime() - 1 * 24 * 60 * 60 * 1000,
-        // start: new Date().getTime(),
         end: new Date(),
       },
     };
   },
   computed: {},
   watch: {
-    // arr,
   },
   created() {
     this.api();
   },
   mounted() {
-    // this.$router.go();
     this.drawMap();
   },
 
   methods: {
     async api() {
-      const url =
-        "/one/openapi/service/rest/Covid19/getCovid19SidoInfStateJson";
-      const serviceKey =
-        "rp3lvczaoVPpOPI%2FsYJJJzknBUNL0LPaAo5HCXybKpsIm1YJjvR%2BtxFV0qoMH38Xq1jLsRN%2B%2BvvOp4XWFw4jkw%3D%3D";
-      let pageNo = "1";
-      let numOfRow = "10";
       let startCreateDt = dayjs(this.range.start).format("YYYYMMDD");
       let endCreateDt = startCreateDt;
 
@@ -98,25 +74,9 @@ export default {
       this.data.sort((a, b) => {
         return a.createDt > b.createDt ? -1 : a.createDt < b.createDt ? 1 : 0;
       });
-      try {
-        let response = await axios.get(
-          url +
-            "?serviceKey=" +
-            serviceKey +
-            "&pageNo" +
-            pageNo +
-            "&numOfRows=" +
-            numOfRow +
-            "&startCreateDt=" +
-            startCreateDt +
-            "&endCreateDt=" +
-            endCreateDt
-        );
-        this.data = response.data.response.body.items.item;
-      } catch (error) {
-        console.log(error);
-      }
 
+      this.data=await nationwideApi(startCreateDt,endCreateDt);
+      
       this.data.splice(0, 1);
       this.data.splice(17, 1);
 
@@ -170,36 +130,15 @@ export default {
       const offset = [xoffset, yoffset];
       projection.scale(scale).translate(offset);
 
-      // const color = d3
-      //   .scaleLinear()
-      //   .domain([1, 20])
-      //   .clamp(true)
-      //   .range(["#595959", "#595959"]);
-
       const _this = this;
 
       function findCodeByName(d) {
         return d.path[0].__data__.properties.CTP_ENG_NM;
       }
-
-      // // Get province color
-      // function fillFn(d) {
-      //   return color(nameLength(d.pointerId));
-      // }
-
       function clicked(d) {
         var region = "/" + findCodeByName(d);
         _this.$router.push({ path: region });
       }
-      // // Get province name length
-      // function nameLength(d) {
-      //   const n = nameFn(d);
-      //   return n ? n.length : 0;
-      // }
-      // // Get province name
-      // function nameFn(d) {
-      //   return d && d.properties ? d.properties.CTP_KOR_NM : null;
-      // }
 
       function setXplace(d, i) {
         //강원
@@ -308,7 +247,6 @@ export default {
         .attr("vector-effect", "non-scaling-stroke")
         .style("fill", "#D32F2F")
         .on("click", clicked);
-      // "#CD5C5C" ,"#BF273C","#D32F2F"
 
       boxLayer
         .selectAll("rect")

@@ -77,7 +77,7 @@ const routes = [
         component: Jeju
     },
     {
-        path: "/Jeollabuk-do",
+        path: "/Jeonbuk",
         name: "Jeonbuk",
         component: Jeonbuk
     },

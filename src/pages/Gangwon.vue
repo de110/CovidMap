@@ -1,11 +1,6 @@
-<!--
 <template>
-  <div id="Gangwon">
-    Gangwon
-  </div>
-</template>
--->
-<template>
+  <div id="gangwon">
+    <covid-title/>
   <div id="mt-3" class="mt-3">
     <div id="map-wrapper" class="map-wrapper">
       <svg>
@@ -13,40 +8,28 @@
       </svg>
     </div>
   </div>
+  </div>
 </template>
 
 <script>
 import * as d3 from "d3";
-const MAP_GEOJSON = require("../assets/local/gangwon.json");
 import dayjs from "dayjs";
-import axios from "axios";
+import { localApi } from '../api';
+import CovidTitle from '../components/CovidTitle.vue';
+const MAP_GEOJSON = require("../assets/local/gangwon.json");
 
 export default {
-  components: {},
+  components: {CovidTitle},
   props: {},
   data() {
     return {
       data: [],
       arr: [
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
+        "0","0","0","0","0",
+        "0","0","0","0","0",
+        "0","0","0","0","0",
+        "0","0"
       ],
-      test: ["1", "2", "3", "4", "5"],
       range: {
         start: new Date().getTime() - 1 * 24 * 60 * 60 * 1000,
         end: new Date(),
@@ -63,38 +46,15 @@ export default {
 
   methods: {
     async api() {
-      const url =
-        "/one/openapi/service/rest/Covid19/getCovid19SidoInfStateJson";
-      const serviceKey =
-        "rp3lvczaoVPpOPI%2FsYJJJzknBUNL0LPaAo5HCXybKpsIm1YJjvR%2BtxFV0qoMH38Xq1jLsRN%2B%2BvvOp4XWFw4jkw%3D%3D";
-      let pageNo = "1";
-      let numOfRow = "10";
       let startCreateDt = dayjs(this.range.start).format("YYYYMMDD");
       let endCreateDt = startCreateDt;
 
-      // console.log(startCreateDt);
       // 날짜 순서대로 재정렬
       this.data.sort((a, b) => {
         return a.createDt > b.createDt ? -1 : a.createDt < b.createDt ? 1 : 0;
       });
-      try {
-        let response = await axios.get(
-          url +
-            "?serviceKey=" +
-            serviceKey +
-            "&pageNo" +
-            pageNo +
-            "&numOfRows=" +
-            numOfRow +
-            "&startCreateDt=" +
-            startCreateDt +
-            "&endCreateDt=" +
-            endCreateDt
-        );
-        this.data = response.data.response.body.items.item;
-      } catch (error) {
-        console.log(error);
-      }
+      
+      this.data=await localApi(startCreateDt,endCreateDt);
 
       this.data.splice(0, 1);
       this.data.splice(17, 1);
@@ -112,35 +72,11 @@ export default {
       // 지도정보
       var geojson = MAP_GEOJSON;
 
-      //   console.log(num);
-
-      //   function getNum() {
-      //     var num = [];
-
-      //     for (var j = 0; j < geojson.features.length; j++) {
-      //       if (geojson.features[j].properties.sidonm == "서울특별시") {
-      //         num.push(geojson.features[j].properties.OBJECTID);
-      //       }
-      //     }
-      //     return num;
-      //   }
-      //   console.log(getNum());
       n = 1;
       m = 16;
       geojson.features.splice(n, m);
-      //   geojson.features.splice();
-      for (var i = 0; i < geojson.features.length; i++) {
-        if (
-          geojson.features[i].properties.CTPRVN_CD == 42 ||
-          geojson.features[i].properties.CTPRVN_CD == 41
-        ) {
-          //   newgeo.push(geojson);
-          //   console.log(newgeo);
-        }
-      }
-      //   // 현재의 브라우저의 크기 계산
+        // 현재의 브라우저의 크기 계산
       const divWidth = document.getElementById("map-wrapper").clientWidth;
-      // const divWidth = document.getElementById("mt-3").clientWidth;
 
       const width = divWidth < 1000 ? divWidth * 1 : 1000;
       const height = width * 1;
@@ -164,18 +100,14 @@ export default {
       // svg 그림의 크기에 따라 출력될 지도의 크기를 다시 계산
       const path = d3.geoPath().projection(projection);
       const bounds = path.bounds(geojson);
-      //   console.log(bounds);
       const widthScale = (bounds[1][0] - bounds[0][0]) / width;
       const heightScale = (bounds[1][1] - bounds[0][1]) / height;
       const scale = 0.95 / Math.max(widthScale, heightScale);
       const xoffset =
         width / 2 - (scale * (bounds[1][0] + bounds[0][0])) / 2 + 0;
-      //   const yoffset =
-      //     height / 2 - (scale * (bounds[1][1] + bounds[0][1])) / 2 + 0;
       const yoffset =
         height / 2 - (scale * (bounds[1][1] + bounds[0][1])) / 2 + 0;
       const offset = [xoffset, yoffset];
-      //   console.log(offset);
       projection.scale(scale).translate(offset);
 
       const color = d3
@@ -184,19 +116,18 @@ export default {
         .clamp(true)
         .range(["#595959", "#595959"]);
 
-      // Get province color
+       // 지역 색상
       function fillFn(d) {
         return color(nameLength(d.pointerId));
       }
 
-      // Get province name length
+      // 지역 이름 길이
       function nameLength(d) {
         const n = nameFn(d);
         return n ? n.length : 0;
       }
-      // Get province name
+      // 지역 이름
       function nameFn(d) {
-        // console.log(d.properties.CTP_KOR_NM);
         return d && d.properties ? d.properties.CTP_KOR_NM : null;
       }
       mapLayer
